@@ -4,6 +4,12 @@ from django.contrib.auth.password_validation import validate_password
 
 User = get_user_model()
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'name', 'avatar', 'is_active', 'is_staff', 'is_email_verified', 'date_joined', 'last_login')
+        read_only_fields = ('id', 'is_active', 'is_staff', 'is_email_verified', 'date_joined', 'last_login')
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
