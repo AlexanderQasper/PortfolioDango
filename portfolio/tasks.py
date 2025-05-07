@@ -5,6 +5,11 @@ from django.template.loader import render_to_string
 from .models import File, Notification
 from .utils import validate_file_type, validate_file_size, get_file_category
 
+
+@shared_task
+def test_add(x, y):
+    return x + y
+
 @shared_task
 def process_uploaded_file(file_id):
     """Process uploaded file in the background."""
