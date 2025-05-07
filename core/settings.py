@@ -59,10 +59,6 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'django_extensions',
     'django_cleanup',
-    'django_ratelimit',
-    'axes',
-    'django_user_agents',
-    'request_logging',
     'auditlog',
     'simple_history',
     
@@ -85,10 +81,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.RateLimitMiddleware',
-    'request_logging.middleware.LoggingMiddleware',
-    'django_user_agents.middleware.UserAgentMiddleware',
-    'axes.middleware.AxesMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
@@ -130,16 +122,17 @@ CACHES = {
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'PARSER_CLASS': 'redis.connection.HiredisParser',
             'CONNECTION_POOL_CLASS': 'redis.connection.BlockingConnectionPool',
             'CONNECTION_POOL_CLASS_KWARGS': {
                 'max_connections': 50,
                 'timeout': 20,
                 'retry_on_timeout': True,
             },
+            'PARSER_CLASS': 'redis.connection.DefaultParser',
             'SOCKET_CONNECT_TIMEOUT': 5,
             'SOCKET_TIMEOUT': 5,
             'IGNORE_EXCEPTIONS': True,
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
         }
     }
 }
@@ -380,14 +373,14 @@ INTERNAL_IPS = [
 ]
 
 DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda request: True if DEBUG else False,
+    'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG and not request.headers.get('x-requested-with') == 'XMLHttpRequest',
     'SHOW_TEMPLATE_CONTEXT': True,
     'ENABLE_STACKTRACES': True,
     'EXTRA_SIGNALS': [],
     'HIDE_DJANGO_SQL': False,
     'TAG': 'div',
-    'ENABLE_STACKTRACES_LOCALS': True,
-    'SHOW_TEMPLATE_CONTEXT': True,
+    'ENABLE_STACKTRACES_LOCALS': False,
+    'SHOW_TEMPLATE_CONTEXT': False,
     'PRETTIFY_SQL': True,
 }
 
@@ -404,12 +397,10 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.signals.SignalsPanel',
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
-    'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
