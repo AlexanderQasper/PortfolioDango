@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third party apps
+    'axes',
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
@@ -82,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -364,7 +366,7 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Rate Limiting
 RATE_LIMIT_REQUESTS = config('RATE_LIMIT_REQUESTS', default=100, cast=int)  # requests
@@ -405,13 +407,14 @@ DEBUG_TOOLBAR_PANELS = [
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
+    'axes.backends.AxesBackend',
 ]
 
 # Axes Configuration
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1  # Hours
 AXES_LOCKOUT_PARAMETERS = ['username']
-AXES_LOCKOUT_TEMPLATE = 'account/locked.html'
+# AXES_LOCKOUT_TEMPLATE = 'account/locked.html'  # Template not used currently
 AXES_VERBOSE = True
 AXES_RESET_ON_SUCCESS = True
 AXES_DISABLE_ACCESS_LOG = False
