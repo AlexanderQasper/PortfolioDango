@@ -8,7 +8,7 @@ from .serializers import (
     CustomCriteriaSerializer, FileSerializer, NotificationSerializer
 )
 from .permissions import IsOwnerOrReadOnly, IsFileOwner
-from .tasks import process_uploaded_file
+from .tasks import process_uploaded_file, send_email_notification
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.core.cache import cache
