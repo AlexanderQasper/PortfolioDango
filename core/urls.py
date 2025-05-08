@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import permissions
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from .views import index, HealthCheckView
+from users.views import CustomTokenObtainPairView
 
 urlpatterns = [
     path('', index),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico')),
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
+    path('api/login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('api/portfolio/', include('portfolio.urls')),
     path('api/rpg/', include('rpg.urls')),
     path('api/universities/', include('universities.urls')),

@@ -413,7 +413,7 @@ AUTHENTICATION_BACKENDS = [
 # Axes Configuration
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1  # Hours
-AXES_LOCKOUT_PARAMETERS = ['username']
+# AXES_LOCKOUT_PARAMETERS = ['username']  # Deprecated, replaced by combination lock option below
 # AXES_LOCKOUT_TEMPLATE = 'account/locked.html'  # Template not used currently
 AXES_VERBOSE = True
 AXES_RESET_ON_SUCCESS = True
@@ -424,8 +424,10 @@ AXES_LOCKOUT_CALLABLE = None
 AXES_COOLOFF_MESSAGE = 'Account locked: too many login attempts. Please try again later.'
 AXES_PERMALOCK_MESSAGE = 'Account locked: too many login attempts. Please contact support.'
 AXES_ENABLE_ADMIN = True
+AXES_ONLY_USER_FAILURES = False
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+
 
 # Admin Interface settings
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-SILENCED_SYSTEM_CHECKS = ['security.W019']
+SILENCED_SYSTEM_CHECKS = ['axes.W004', 'security.W019']
