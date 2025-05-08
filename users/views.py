@@ -26,7 +26,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         try:
             response = super().post(request, *args, **kwargs)
-            AxesProxyHandler().reset_attempts(request, credentials={"username": username})
+            AxesProxyHandler().reset_attempts()
             logger.info(f"✅ Successful login for user '{username}'. Lockout counter reset.")
             return response
 

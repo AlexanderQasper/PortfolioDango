@@ -5,6 +5,7 @@ from rest_framework import status
 from django.db import connection
 from django.core.cache import cache
 from django.conf import settings
+from django.core.mail import send_mail
 import redis
 import psutil
 import os
@@ -67,3 +68,19 @@ class HealthCheckView(APIView):
             health_status['status'] = 'unhealthy'
         
         return Response(health_status)
+
+class TestEmailView(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        try:
+            send_mail(
+                subject='Test Email',
+                message='This is a test message from Django.',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=['comeinfine.podcast@gmail.com'],  # ← заменить, если нужно
+                fail_silently=False,
+            )
+            return Response({'status': 'Email sent successfully'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
