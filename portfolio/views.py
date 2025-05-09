@@ -57,6 +57,7 @@ class CustomCriteriaViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 class FileViewSet(viewsets.ModelViewSet):
+    queryset = File.objects.all()
     serializer_class = FileSerializer
     permission_classes = [permissions.IsAuthenticated, IsFileOwner]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -68,6 +69,15 @@ class FileViewSet(viewsets.ModelViewSet):
         return File.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
+        from django.conf import settings
+        from rest_framework.exceptions import ValidationError
+
+        max_size = getattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024)
+        content_length = int(self.request.META.get('CONTENT_LENGTH', 0))
+
+        if content_length > max_size:
+            raise ValidationError({'file': f"File size exceeds the limit of {max_size / (1024 * 1024):.0f}MB."})
+
         serializer.save(user=self.request.user)
 
 class NotificationViewSet(viewsets.ModelViewSet):

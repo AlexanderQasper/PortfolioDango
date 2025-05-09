@@ -23,4 +23,13 @@ class IsFileOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Only the owner can access their files
-        return obj.user == request.user 
+        return obj.user == request.user
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Пользователь может читать чужой объект, но менять — только свой.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user

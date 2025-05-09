@@ -85,7 +85,21 @@ class FileSerializer(serializers.ModelSerializer):
         
         return data
 
+    def validate_file(self, value):
+        import os
+        from django.conf import settings
+
+        ext = os.path.splitext(value.name)[1][1:].lower()
+        allowed = sum(settings.ALLOWED_FILE_TYPES.values(), [])
+        if ext not in allowed:
+            raise serializers.ValidationError(f"Unsupported file extension '{ext}'.")
+        max_size = getattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024)  # 10MB
+        if value.size > max_size:
+            raise serializers.ValidationError(f"File size exceeds the limit of {max_size / (1024 * 1024):.0f}MB.")
+        return value
+
     def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
         category_ids = validated_data.pop('category_ids', [])
         criteria_ids = validated_data.pop('criteria_ids', [])
         
