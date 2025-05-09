@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework import generics, status, viewsets, permissions
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -13,6 +13,11 @@ from axes.helpers import get_client_username
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserSerializer
 from .permissions import IsSelfOrAdmin
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import User
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -20,6 +25,9 @@ User = get_user_model()
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         username = request.data.get("username", "").strip()
+        user = User.objects.filter(email=username).first()
+        if user and not user.is_email_verified:
+            raise AuthenticationFailed("Please verify your email before logging in.")
 
         if AxesProxyHandler().is_locked(request):
             logger.warning(f"🔒 User '{username}' is locked out.")
@@ -44,6 +52,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class UserRegistrationView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        user.send_verification_email()
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -64,7 +77,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return User.objects.all()
         return User.objects.filter(id=self.request.user.id)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def verify_email(self, request):
         token = request.data.get('token')
         if not token:

@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+import uuid
+
+def generate_token():
+    return uuid.uuid4().hex
 
 User = get_user_model()
 
@@ -28,6 +32,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             username=validated_data['username'],
             name=validated_data['name'],
+            email_verification_token=generate_token()
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -37,4 +42,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'name', 'avatar')
-        read_only_fields = ('email',) 
+        read_only_fields = ('email',)

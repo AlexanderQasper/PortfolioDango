@@ -30,6 +30,7 @@ urlpatterns = [
     path('health/', HealthCheckView.as_view(), name='health-check'),
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico')),
     path('admin/', admin.site.urls),
+    path('api/users/', include('users.urls')),
     path('api/', include('users.urls')),
     path("api/send-email/", SendEmailView.as_view(), name="send_email"),
     path('api/portfolio/', include('portfolio.urls')),
