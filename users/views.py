@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from axes.handlers.proxy import AxesProxyHandler
+from axes.helpers import get_client_username
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserSerializer
 from .permissions import IsSelfOrAdmin
 
@@ -24,16 +25,20 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             logger.warning(f"🔒 User '{username}' is locked out.")
             raise AuthenticationFailed("Account is locked due to too many login attempts.")
 
-        try:
-            response = super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == 200:
             AxesProxyHandler().reset_attempts()
             logger.info(f"✅ Successful login for user '{username}'. Lockout counter reset.")
-            return response
-
-        except AuthenticationFailed as e:
-            AxesProxyHandler().log_failure(request, credentials={"username": username})
+        else:
+            AxesProxyHandler().user_login_failed(
+                sender=self.__class__,
+                request=request,
+                credentials={"username": username}
+            )
             logger.warning(f"❌ Failed login attempt for user '{username}'.")
-            raise e
+
+        return response
 
 
 class UserRegistrationView(generics.CreateAPIView):
