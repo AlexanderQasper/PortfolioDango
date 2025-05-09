@@ -69,16 +69,25 @@ class HealthCheckView(APIView):
         
         return Response(health_status)
 
-class TestEmailView(APIView):
+
+class SendEmailView(APIView):
     permission_classes = []
 
-    def get(self, request):
+    def post(self, request):
+        from django.core.mail import send_mail
+        from django.conf import settings
+
+        data = request.data
+        subject = data.get("subject", "Test Subject")
+        message = data.get("message", "Test message body.")
+        recipient = data.get("recipient", settings.EMAIL_HOST_USER)
+
         try:
             send_mail(
-                subject='Test Email',
-                message='This is a test message from Django.',
+                subject=subject,
+                message=message,
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=['comeinfine.podcast@gmail.com'],  # ← заменить, если нужно
+                recipient_list=[recipient],
                 fail_silently=False,
             )
             return Response({'status': 'Email sent successfully'})
