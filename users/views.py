@@ -24,27 +24,30 @@ User = get_user_model()
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        username = request.data.get("username", "").strip()
-        user = User.objects.filter(email=username).first()
+        # Use email as the primary login field
+        email = request.data.get("email", "").strip()
+        user = User.objects.filter(email=email).first()
+        
+        # Check if the email has been verified before allowing login
         if user and not user.is_email_verified:
             raise AuthenticationFailed("Please verify your email before logging in.")
 
         if AxesProxyHandler().is_locked(request):
-            logger.warning(f"🔒 User '{username}' is locked out.")
+            logger.warning(f"🔒 User '{email}' is locked out.")
             raise AuthenticationFailed("Account is locked due to too many login attempts.")
 
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == 200:
             AxesProxyHandler().reset_attempts()
-            logger.info(f"✅ Successful login for user '{username}'. Lockout counter reset.")
+            logger.info(f"✅ Successful login for user '{email}'. Lockout counter reset.")
         else:
             AxesProxyHandler().user_login_failed(
                 sender=self.__class__,
                 request=request,
-                credentials={"username": username}
+                credentials={"email": email}
             )
-            logger.warning(f"❌ Failed login attempt for user '{username}'.")
+            logger.warning(f"❌ Failed login attempt for user '{email}'.")
 
         return response
 

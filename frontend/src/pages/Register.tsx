@@ -5,6 +5,8 @@ import axios from 'axios';
 
 export const Register = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,15 +36,26 @@ export const Register = () => {
 
     try {
       console.log('Attempting registration with:', { email });
-      const response = await register(email, password);
+
+      const payload = {
+        email,
+        username,
+        name,
+        password,
+        password2: confirmPassword,
+      };
+
+      const response = await register(payload);
       console.log('Registration successful:', response);
       setSuccess(true);
-      
+
       // Clear form
       setEmail('');
+      setUsername('');
+      setName('');
       setPassword('');
       setConfirmPassword('');
-      
+
       // Show success message for 2 seconds before redirecting
       setTimeout(() => {
         console.log('Navigating to login page');
@@ -120,6 +133,28 @@ export const Register = () => {
             </div>
             <div>
               <input
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading || success}
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoading || success}
+              />
+            </div>
+            <div>
+              <input
                 type="password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
@@ -165,4 +200,4 @@ export const Register = () => {
       </div>
     </div>
   );
-}; 
+};

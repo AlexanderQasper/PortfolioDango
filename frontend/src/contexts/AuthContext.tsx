@@ -5,7 +5,13 @@ import axiosInstance from '../lib/axios';
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (payload: {
+    email: string;
+    username: string;
+    name: string;
+    password: string;
+    password2: string;
+  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -45,13 +51,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (payload: {
+    email: string;
+    username: string;
+    name: string;
+    password: string;
+    password2: string;
+  }) => {
     try {
-      console.log('Starting registration process for:', email);
-      const response = await axiosInstance.post('/users/register/', {
-        email,
-        password,
-      });
+      console.log('Starting registration process for:', payload.email);
+      const response = await axiosInstance.post('/users/register/', payload);
       console.log('Registration response:', response.data);
       return response.data;
     } catch (error) {
@@ -91,4 +100,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
